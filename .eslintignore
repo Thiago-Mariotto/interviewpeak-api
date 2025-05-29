@@ -1,0 +1,38 @@
+# .eslintignore
+
+# Dependencies
+node_modules/
+node_modules/**/*
+
+# Build outputs
+dist/
+dist/**/*
+build/
+build/**/*
+
+# Coverage reports
+coverage/
+coverage/**/*
+
+# Prisma generated files
+prisma/migrations/
+prisma/migrations/**/*
+.prisma/
+.prisma/**/*
+
+# Config files
+.eslintrc.js
+*.config.js
+*.config.ts
+
+# Cache and temporary files
+.eslintcache
+.cache/
+*.tmp
+*.temp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

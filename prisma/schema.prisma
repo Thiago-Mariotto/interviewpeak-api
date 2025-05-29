@@ -1,0 +1,250 @@
+// Extensão do schema.prisma existente para incluir monetização
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String           @id @default(uuid())
+  name           String
+  email          String           @unique
+  password       String
+  role           String           @default("user")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  
+  interviewSessions InterviewSession[]
+  interviewCredits  InterviewCredit[]
+  purchases         Purchase[]
+  ipRegistry        IpRegistry[]
+  
+  @@map("users")
+}
+
+// Atualize o modelo InterviewSession no schema.prisma
+
+model InterviewSession {
+  id         String    @id @default(uuid())
+  settings   Json
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  status     String    @default("created")
+  duration   Int       @default(15) // Duração em minutos
+  startTime  DateTime? // Quando a entrevista foi iniciada
+  endTime    DateTime? // Quando a entrevista foi finalizada
+  language   String    @default("pt-br") // Idioma da entrevista
+  
+  // Campos adicionais para controle de tempo
+  pausedTimeMs     Int?      @map("paused_time_ms") // Tempo restante em ms quando pausado
+  lastPausedAt     DateTime? @map("last_paused_at") // Última vez que foi pausada
+  lastResumedAt    DateTime? @map("last_resumed_at") // Última vez que foi retomada
+  lastUpdatedTimeAt DateTime? @map("last_updated_time_at") // Última sincronização de tempo
+  isFinishing      Boolean   @default(false) @map("is_finishing") // Flag para indicar entrevista finalizando
+  
+  // Classificação da entrevista
+  interviewType String  @default("basic") // basic, specialized
+  careerLevel   String? // jr, pl, sr
+  position      String? // software_engineer, devops, product_manager, etc
+  company       String? // Para entrevistas especializadas (google, amazon, etc)
+
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id])
+  
+  messages   Message[]
+  feedback   InterviewFeedback?
+
+  // Referência ao crédito usado
+  creditId   String?   @map("credit_id")
+  credit     InterviewCredit? @relation(fields: [creditId], references: [id])
+
+  @@index([userId])
+  @@map("interview_sessions")
+}
+
+// Modificação na definição do modelo Message
+model Message {
+  id              String   @id @default(uuid())
+  sessionId       String   @map("session_id")
+  role            String
+  content         String   @db.Text
+  timestamp       DateTime @default(now())
+  
+  session         InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("messages")
+}
+
+model InterviewFeedback {
+  id                 String        @id @default(uuid())
+  sessionId          String        @unique @map("session_id")
+  overallScore       Int           @map("overall_score")
+  overallComment     String        @map("overall_comment")
+  strengths          Json
+  areasToImprove     Json          @map("areas_to_improve")
+  generatedAt        DateTime      @default(now()) @map("generated_at")
+  
+  // Campo para o nível de feedback (básico, premium)
+  feedbackLevel      String        @default("basic") @map("feedback_level")
+  
+  // Campos adicionais para feedback premium
+  studyMaterials     Json?         @map("study_materials")
+  preparationTips    Json?         @map("preparation_tips")
+  
+  session            InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  feedbackItems      FeedbackItem[]
+
+  @@map("interview_feedback")
+}
+
+model FeedbackItem {
+  id                     String            @id @default(uuid())
+  feedbackId             String            @map("feedback_id")
+  category               String
+  score                  Int
+  comment                String
+  improvementSuggestion  String            @map("improvement_suggestion")
+  
+  feedback               InterviewFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  @@index([feedbackId])
+  @@map("feedback_items")
+}
+
+// Modelos para o sistema de monetização
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  active      Boolean     @default(true)
+  
+  // Tipo de produto
+  productType String      @map("product_type") // basic_interview, specialized
+  
+  // Detalhes específicos do produto
+  duration    Int?        // Duração em minutos (para entrevistas básicas)
+  position    String?     // Cargo relacionado
+  company     String?     // Empresa (para entrevistas especializadas)
+
+  stripeId    String?     @unique @map("stripe_id") // Adicionar este campo
+  
+  // Metadados
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  
+  // Relações
+  prices      Price[]
+  
+  @@map("products")
+}
+
+model Price {
+  id          String      @id @default(uuid())
+  productId   String      @map("product_id")
+  product     Product     @relation(fields: [productId], references: [id])
+  
+  // Detalhes do preço
+  amount      Int         // Valor em centavos
+  currency    String      @default("BRL")
+  
+  // Detalhes do pacote
+  quantity    Int         // Número de entrevistas no pacote
+  expiryDays  Int         @default(30) @map("expiry_days") // Dias até expirar
+  
+  // Stripe ID
+  stripeId    String?     @unique @map("stripe_id")
+  
+  // Metadados
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  
+  // Relações
+  purchases   Purchase[]
+  
+  @@map("prices")
+}
+
+model Purchase {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  user        User        @relation(fields: [userId], references: [id])
+  priceId     String      @map("price_id")
+  price       Price       @relation(fields: [priceId], references: [id])
+  
+  // Detalhes da compra
+  amount      Int         // Valor pago em centavos
+  status      String      @default("pending") // pending, completed, failed, refunded
+  
+  // Dados do Stripe
+  stripeSessionId  String?  @map("stripe_session_id")
+  stripePaymentId  String?  @map("stripe_payment_id")
+  
+  // Metadados
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  
+  // Relações
+  credits     InterviewCredit[]
+  
+  @@map("purchases")
+}
+
+model InterviewCredit {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  user          User        @relation(fields: [userId], references: [id])
+  purchaseId    String?     @map("purchase_id")
+  purchase      Purchase?   @relation(fields: [purchaseId], references: [id])
+
+  // Detalhes do crédito
+  quantity      Int         
+  remaining     Int         
+  
+  // Tipo de crédito
+  creditType    String      @map("credit_type") 
+  
+  // Detalhes específicos (depende do tipo de crédito)
+  duration      Int?        // Duração em minutos (para entrevistas básicas)
+  position      String?     // Cargo relacionado
+  company       String?     // Empresa (para entrevistas especializadas)
+  
+  // Datas
+  createdAt     DateTime    @default(now()) @map("created_at")
+  expiresAt     DateTime    @map("expires_at")
+  
+  // Relações
+  usedIn        InterviewSession[]
+  
+  @@map("interview_credits")
+}
+
+// Opcional: registro de webhooks do Stripe
+model StripeEvent {
+  id            String     @id
+  type          String
+  data          Json
+  processed     Boolean    @default(false)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  processedAt   DateTime?  @map("processed_at")
+  
+  @@map("stripe_events")
+}
+
+model IpRegistry {
+  id        String    @id @default(uuid())
+  ip        String
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([ip])
+  @@map("ip_registry")
+}

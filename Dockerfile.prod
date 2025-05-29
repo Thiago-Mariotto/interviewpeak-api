@@ -1,0 +1,54 @@
+# Estágio de build
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Instalar dependências necessárias
+RUN apk add --no-cache openssl python3 make g++
+
+# Primeiro, copiar apenas package.json e remover o script prepare
+COPY package.json .
+RUN npm pkg delete scripts.prepare
+
+# Agora copiar o resto dos arquivos package
+COPY package-lock.json* .
+COPY prisma ./prisma/
+
+# Instalar as dependências completas
+RUN npm install
+
+# Copiar o resto do código fonte
+COPY . .
+
+# Gerar o cliente Prisma explicitamente
+RUN npx prisma generate
+
+# Compilar a aplicação
+RUN npm run build
+
+# Estágio de produção
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Instalar só o que é necessário para produção
+RUN apk add --no-cache openssl
+
+# Copiar arquivos necessários do builder
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/dist ./dist
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001 && \
+    chown -R nestjs:nodejs /app
+
+USER nestjs
+
+# Expor a porta
+EXPOSE 8000
+
+# Iniciar a aplicação no caminho correto
+CMD ["npm", "run", "start:prod"]

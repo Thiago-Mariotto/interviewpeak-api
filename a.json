@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "candidateLimit": 5,
+  "userId": "e1a27727-a321-40d8-ad15-2f9b9ea2750e",
+  "externalId": "e1a27727-a321-40d8-ad15-2f9b9ea2750e",
+  "contacts": [
+    "5904e9ce-ac2c-44fa-a64e-c605fcf8ee89"
+  ],
+  "removedContacts": [],
+  "isDeleted": false,
+  "publicId": "57030b84-822b-42b1-affd-f3324a3dc581",
+  "createdAt": "2025-04-03T13:31:08.356Z",
+  "updatedAt": "2025-04-03T13:31:20.611Z"
+}
