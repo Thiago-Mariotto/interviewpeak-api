@@ -19,7 +19,9 @@ export class SpecializedTechnicalPromptProvider extends BasePromptProvider {
     return (
       settings.productType === InterviewProductType.SPECIALIZED &&
       settings.specializedType !== undefined &&
-      settings.specializedType !== SpecializedInterviewType.BACKEND_DEVELOPER // Backend has its own provider
+      settings.specializedType !== SpecializedInterviewType.BACKEND_DEVELOPER &&
+      settings.specializedType !== SpecializedInterviewType.FRONTEND_DEVELOPER &&
+      settings.specializedType !== SpecializedInterviewType.FULLSTACK_DEVELOPER
     );
   }
 
@@ -94,7 +96,7 @@ export class SpecializedTechnicalPromptProvider extends BasePromptProvider {
         ${languageInstruction}
 
         This is a specialized ${specializationName} interview for ${settings.careerLevel?.toUpperCase()} level.
-        Target Duration: 20-25 minutes with structured progression.
+        Target Duration: 25-40 minutes with structured progression.
 
         ${levelGuidance}
 
@@ -134,6 +136,7 @@ export class SpecializedTechnicalPromptProvider extends BasePromptProvider {
    */
   private getSpecializationName(specializedType: SpecializedInterviewType): string {
     const names = {
+      [SpecializedInterviewType.BACKEND_DEVELOPER]: 'Backend Developer',
       [SpecializedInterviewType.FRONTEND_DEVELOPER]: 'Frontend Developer',
       [SpecializedInterviewType.FULLSTACK_DEVELOPER]: 'Fullstack Developer',
       [SpecializedInterviewType.MOBILE_DEVELOPER]: 'Mobile Developer',
@@ -200,7 +203,7 @@ export class SpecializedTechnicalPromptProvider extends BasePromptProvider {
    */
   private getInterviewStructure(): string {
     return `
-        INTERVIEW STRUCTURE (20-25 minutes):
+        INTERVIEW STRUCTURE (25-40 minutes):
         
         1. WARM-UP AND EXPERIENCE (3-6 min):
            - Brief personal introduction
@@ -240,7 +243,6 @@ export class SpecializedTechnicalPromptProvider extends BasePromptProvider {
       [SpecializedInterviewType.FRONTEND_DEVELOPER]: `
         FRONTEND DEVELOPER FOCUS AREAS:
         - Modern frontend frameworks and libraries
-        - JavaScript/TypeScript expertise 
         - CSS and responsive design principles
         - Build tools and development workflow
         - Web performance optimization techniques

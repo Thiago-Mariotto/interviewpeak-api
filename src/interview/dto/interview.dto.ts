@@ -82,8 +82,8 @@ export class InterviewSettingsDto {
 
   /**
    * Interview duration in minutes
-   * For specialized interviews: 20-25 minutes recommended
-   * For basic interviews: 10-20 minutes
+   * For specialized interviews: 25-50 minutes recommended
+   * For basic interviews: 10-30 minutes
    */
   @IsNumber()
   @Min(1)

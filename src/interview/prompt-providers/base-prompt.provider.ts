@@ -137,6 +137,15 @@ export class BasePromptProvider implements IPromptProvider {
         - Your responses should be relevant to the current context of the conversation.
         - If the candidate talks about their experience, ask questions about that experience.
         - Stay focused on the current topic of conversation. Don't change topics abruptly.
+
+        INTERVIEW CONCLUSION INSTRUCTIONS:
+        - When you have covered all necessary topics and feel the interview is complete
+        - After asking your final question and receiving the candidate's response
+        - When the natural flow of conversation indicates the interview should end
+        - ALWAYS end your final response with exactly this text: {{END_INTERVIEW}}
+        - This marker MUST appear at the very end of your last message
+        - Do NOT include {{END_INTERVIEW}} in any response except the final one
+        - Example: "Thank you for your time today. We'll be in touch soon. {{END_INTERVIEW}}"
         
         VOICE FORMAT INSTRUCTIONS:
         - This is a voice-only interview. Do not ask the candidate to write, show, or submit any code.

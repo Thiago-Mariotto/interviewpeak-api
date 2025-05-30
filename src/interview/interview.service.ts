@@ -31,7 +31,6 @@ export class InterviewService {
         `Creating interview session for user: ${userId} with settings: ${JSON.stringify(settings)}`,
       );
 
-      // Determinar o tipo correto da entrevista
       const interviewType =
         settings.productType === InterviewProductType.SPECIALIZED ? 'specialized' : 'basic';
 
@@ -42,7 +41,6 @@ export class InterviewService {
           status: 'created',
           userId: userId,
           duration,
-          // CORREÇÃO: Salvar os campos corretos
           interviewType: interviewType,
           careerLevel: settings.careerLevel || null,
           position: settings.specializedType || null,
@@ -106,7 +104,6 @@ export class InterviewService {
     let creditType: string;
     const duration = session.duration || 15;
 
-    // CORREÇÃO: Verificar o productType das settings, não o interviewType da session
     if (settings.productType === InterviewProductType.SPECIALIZED) {
       creditType = 'specialized'; // Usar o tipo que está realmente no banco
 
@@ -125,7 +122,7 @@ export class InterviewService {
         id,
         creditType,
         duration,
-        settings.specializedType?.toLowerCase().replace(/\s+/g, '_'), // Usar specializedType
+        settings.specializedType?.toLowerCase().replace(/\s+/g, '_'),
         settings.companyName?.toLowerCase(),
       );
     } catch (error) {
@@ -141,7 +138,6 @@ export class InterviewService {
       data: {
         status: 'in_progress',
         startTime: new Date(),
-        // CORREÇÃO: Salvar os campos corretos no banco
         interviewType:
           settings.productType === InterviewProductType.SPECIALIZED ? 'specialized' : 'basic',
         careerLevel: settings.careerLevel || null,
@@ -308,11 +304,7 @@ export class InterviewService {
       );
     }
 
-    // Obter todas as mensagens da entrevista sem modificá-las
     const messages = await this.getInterviewMessages(sessionId, userId, isAdmin);
-
-    // REMOVIDO: Código que detectava e corrigia fluxos anômalos
-    // Não adicionamos mais mensagens intermediárias fictícias
 
     const response = await this.interviewEngine.generateResponse(
       session.settings as unknown as InterviewSettingsDto,

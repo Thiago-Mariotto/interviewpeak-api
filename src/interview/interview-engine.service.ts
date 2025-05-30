@@ -278,7 +278,7 @@ export class InterviewEngineService {
 
     Please start this specialized ${specializationType} interview for ${careerLevel} level with:
       1. A warm and professional introduction  
-      2. Brief explanation about the structure of this specialized technical interview (20-25 minutes)
+      2. Brief explanation about the structure of this specialized technical interview (25-40 minutes)
       3. Invitation for the candidate to briefly introduce themselves and discuss their most relevant experience
       4. Maintain a ${settings.interviewerPersonality} tone as per your personality
       

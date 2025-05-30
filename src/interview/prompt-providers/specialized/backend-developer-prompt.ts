@@ -241,7 +241,7 @@ export class BackendDeveloperPromptProvider extends BasePromptProvider {
    */
   private getInterviewStructure(): string {
     return `
-        INTERVIEW STRUCTURE (25-35 minutes):
+        INTERVIEW STRUCTURE (25-40 minutes):
 
         1. WARM-UP AND EXPERIENCE REVIEW (3-6 minutes):
           - Brief personal introduction
@@ -269,6 +269,7 @@ export class BackendDeveloperPromptProvider extends BasePromptProvider {
           - Candidate's questions about the role or company
           - Next steps in the interview process
           - Professional thank you and closing
+          - IMPORTANT: End with {{END_INTERVIEW}} marker after your final response
 
         IMPORTANT: Use transition phrases between sections to maintain structured flow and ensure natural progression through topics.
     `;
