@@ -11,7 +11,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; user: any }> {
     // Validate user credentials
@@ -21,7 +21,7 @@ export class AuthService {
     );
 
     // Generate JWT token
-    const payload = { sub: user.id, email: user.email, role: user.role.toLocaleLowerCase() };
+    const payload = { sub: user.id, email: user.email, role: user.role.toLocaleLowerCase(), name: user.name };
     const accessToken = this.jwtService.sign(payload);
 
     this.logger.log(`User logged in: ${user.id}`);
